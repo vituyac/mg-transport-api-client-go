@@ -52,6 +52,45 @@ type Template struct {
 	Header             *TemplateHeader            `json:"header,omitempty"`
 	Footer             string                     `json:"footer,omitempty"`
 	Buttons            *TemplateButtons           `json:"buttons,omitempty"`
+	Carousel           *TemplateCarousel          `json:"carousel,omitempty"`
+}
+
+type TemplateCarouselCardType string
+
+const (
+	TemplateCarouselCardProduct TemplateCarouselCardType = "product"
+)
+
+// TemplateCarousel describes the cards of a carousel template.
+type TemplateCarousel struct {
+	Cards []TemplateCarouselCard `json:"cards"`
+}
+
+type TemplateCarouselCard struct {
+	Header  TemplateCarouselCardHeader `json:"header"`
+	Body    string                     `json:"body,omitempty"`
+	Buttons *TemplateButtons           `json:"buttons,omitempty"`
+	Example *TemplateExample           `json:"example,omitempty"`
+}
+
+type TemplateCarouselCardHeader struct {
+	Type TemplateCarouselCardType `json:"type"`
+}
+
+// TemplateCarouselArguments supplies card values when sending a carousel template.
+type TemplateCarouselArguments struct {
+	Cards []TemplateCarouselCardArguments `json:"cards"`
+}
+
+type TemplateCarouselCardArguments struct {
+	Header  TemplateCarouselCardHeaderArguments `json:"header"`
+	Body    *TemplateBodyArguments              `json:"body,omitempty"`
+	Buttons []TemplateButtonArguments           `json:"buttons,omitempty"`
+}
+
+type TemplateCarouselCardHeaderArguments struct {
+	Type              TemplateCarouselCardType `json:"type"`
+	ProductRetailerID string                   `json:"product_retailer_id"`
 }
 
 type TemplateExample struct {
@@ -93,6 +132,8 @@ func (b *TemplateButtons) UnmarshalJSON(value []byte) error {
 			btn = &URLButton{}
 		case ButtonTypeRequestContactInfo:
 			btn = &RequestContactInfoButton{}
+		case ButtonTypeSPM:
+			btn = &SPMButton{}
 		default:
 			return errors.New("undefined type of button")
 		}
@@ -147,12 +188,18 @@ const (
 	ButtonTypePhone              ButtonType = "phone"
 	ButtonTypeURL                ButtonType = "url"
 	ButtonTypeRequestContactInfo ButtonType = "request_contact_info"
+	ButtonTypeSPM                ButtonType = "spm"
 )
 
 // RequestContactInfoButton requests contact information without a customizable label.
 type RequestContactInfoButton struct{}
 
 func (RequestContactInfoButton) ButtonType() ButtonType { return ButtonTypeRequestContactInfo }
+
+// SPMButton opens the product detail for a card in a WhatsApp catalog.
+type SPMButton struct{}
+
+func (SPMButton) ButtonType() ButtonType { return ButtonTypeSPM }
 
 type PlainButton struct {
 	Label string `json:"label"`
